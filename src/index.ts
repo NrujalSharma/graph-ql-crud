@@ -14,16 +14,6 @@ const typeDefs = `#graphql
     ISBN: String
   }
 
-  type Query {
-    books(title: String, skip: Int, limit: Int): [Book]
-    book(id: Int): Book
-  }
-
-  type Mutation {
-    createBook(title: String, author: String, genre: String, publishedYear: Int, pageCount: Int, language: String, publisher: String, ISBN: String): Book
-    updateBook(id: Int, bookInput: BookInput): Book
-  }
-
   input BookInput {
     title: String
     author: String
@@ -33,6 +23,23 @@ const typeDefs = `#graphql
     language: String
     publisher: String
     ISBN: String
+  }
+
+  type DeleteBookResponse {
+    success: Boolean
+    message: String
+    deletedBook: Book
+  }
+
+  type Query {
+    books(title: String, skip: Int, limit: Int): [Book]
+    book(id: Int): Book
+  }
+
+  type Mutation {
+    createBook(title: String, author: String, genre: String, publishedYear: Int, pageCount: Int, language: String, publisher: String, ISBN: String): Book
+    updateBook(id: Int, bookInput: BookInput): Book
+    deleteBook(id: Int, bookInput: BookInput): DeleteBookResponse
   }
 `;
 
@@ -312,6 +319,23 @@ const resolvers = {
         return books[bookIndex];
       } else {
         throw new Error(`Book with ID ${id} not found`);
+      }
+    },
+    deleteBook: (_, { id }) => {
+      const bookIndex = books.findIndex((book) => book.id === id);
+      if (bookIndex !== -1) {
+        const deletedBook = books.splice(bookIndex, 1)[0];
+        return {
+          success: true,
+          message: "Book deleted successfully",
+          deletedBook,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Book with ID ${id} not found`,
+          deletedBook: null,
+        };
       }
     },
   },
